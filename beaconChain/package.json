@@ -31,6 +31,7 @@
   "dependencies": {
     "bignumber.js": "^7.2.1",
     "blakejs": "^1.1.0",
+    "js-sha3": "^0.8.0",
     "ssz": "^1.5.2"
   },
   "bin": {

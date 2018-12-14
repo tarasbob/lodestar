@@ -6,7 +6,7 @@ type bytes = number;
 type uint24 = number;
 type uint64 = number;
 type uint384 = number;
-type hash32 = number;
+type hash32 = string;
 
 // Beacon chain operations
 

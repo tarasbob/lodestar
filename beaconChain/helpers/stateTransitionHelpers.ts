@@ -1,4 +1,6 @@
 // Helper functions related to state transition functions
+import {keccak256} from 'js-sha3';
+
 import {EPOCH_LENGTH, MAX_DEPOSIT} from "../constants/constants";
 import { ValidatorStatusCodes } from "../constants/enums";
 import {AttestationData, BeaconBlock} from "../interfaces/blocks";
@@ -7,7 +9,7 @@ import {BeaconState, ShardCommittee, ValidatorRecord} from "../interfaces/state"
 type int = number;
 type bytes = number;
 type uint24 = number;
-type hash32 = number;
+type hash32 = string;
 
 /**
  * The following is a function that gets active validator indices from the validator list.
@@ -42,12 +44,12 @@ function shuffle<T>(values: T[], seed: hash32): T[] {
 
   // Make a copy of the values
   const output: T[] = values.slice();
-  const source = seed; // REALLY??
-  const index = 0; // REALLY??
+  let source = seed;
+  let index = 0;
   while (index < valuesCount - 1) {
     // Re-hash the `source` to obtain a new pattern of bytes.
     // TODO figure out what this hash function is in python -> JS
-    // let source = hash(source)
+    source = keccak256(source)
 
     // Iterate through the `source` bytes in 3-byte chunks.
 
@@ -112,11 +114,9 @@ function getShardCommitteesAtSlot(state: BeaconState, slot: int): ShardCommittee
  * @param {int} slot
  * @returns {hash32}
  */
-function getBlockHash(state: BeaconState, slot: int): hash32 {
+function getBlockRoot(state: BeaconState, slot: int): hash32 {
   const earliestSlotInArray = state.slot - state.latestBlockHashes.length;
-  if (earliestSlotInArray <= slot && slot < state.slot) {
-    throw new Error();
-  }
+  if (earliestSlotInArray <= slot && slot < state.slot) throw new Error();
   return state.latestBlockHashes[slot - earliestSlotInArray];
 }
 
