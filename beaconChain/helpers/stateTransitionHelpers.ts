@@ -1,6 +1,7 @@
-// Helper functions related to state transition functions
 import {keccak256} from 'js-sha3';
+import _ from 'lodash';
 
+// Relative imports
 import {EPOCH_LENGTH, MAX_DEPOSIT} from "../constants/constants";
 import { ValidatorStatusCodes } from "../constants/enums";
 import {AttestationData, BeaconBlock} from "../interfaces/blocks";
@@ -30,13 +31,13 @@ export function getActiveValidatorIndices(validators: ValidatorRecord[]): int[] 
  * @param {hash32} seed
  * @returns {T[]} Returns the shuffled values with seed as entropy.
  */
-// TODO finish this
+// TODO finish
 function shuffle<T>(values: T[], seed: hash32): T[] {
   const valuesCount: int = values.length;
   // Entropy is consumed from the seed in 3-byte (24 bit) chunks.
-  const randBytes = 3;
+  const randBytes: int = 3;
   // Highest possible result of the RNG
-  const randMax = 2 ** (randBytes * 8) - 1;
+  const randMax: int = 2 ** (randBytes * 8) - 1;
 
   // The range of the RNG places an upper-bound on the size of the list that may be shuffled.
   // It is a logic error to supply an oversized list.
@@ -44,15 +45,44 @@ function shuffle<T>(values: T[], seed: hash32): T[] {
 
   // Make a copy of the values
   const output: T[] = values.slice();
-  let source = seed;
-  let index = 0;
+  let source: string = seed;
+  let index: int = 0;
   while (index < valuesCount - 1) {
     // Re-hash the `source` to obtain a new pattern of bytes.
-    // TODO figure out what this hash function is in python -> JS
-    source = keccak256(source)
+    source = keccak256(source);
+    // NOTE: usage of lodash.range() method to mimic python range.
+    for (let position in _.range(0, 32 - (32 % randBytes), randBytes)) {
 
-    // Iterate through the `source` bytes in 3-byte chunks.
+      // Determine the number of indices remaining in `values` and exit
+      // once the last index is reached.
+      let remaining: int = valuesCount - index;
+      if (remaining === 1) break;
 
+      // Read 3-bytes of `source` as a 24-bit big-endian integer.
+      // TODO: It should be noted at this point we need to do some math in regards to
+      // bytes. Will need to look at our best alternatives since class Buffer is a node
+      // specific package. For the time being stubbing the return value as an integer.
+      // TODO: typeof position === string .... ? Should be a number.
+      let sampleFromSource = source.slice(position, (position + randBytes));
+
+      // Sample values greater than or equal to `sample_max` will cause
+      // modulo bias when mapped into the `remaining` range.
+      let sampleMax = randMax - randMax % remaining;
+
+      // Perform a swap if the consumed entropy will not cause modulo bias.
+      if (sampleFromSource < sampleMax) {
+        // Select a replacement index for the current index.
+        let replacementPosition = (sampleFromSource % remaining) + index;
+
+        // Store previous index value before the swap.
+        let prevIndex = output[index];
+
+        // Swap the current index with the replacement index.
+        output[index] = output[replacementPosition];
+        output[replacementPosition] = prevIndex;
+        index += 1;
+      }
+    }
   }
 
   return [];
