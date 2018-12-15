@@ -60,8 +60,8 @@ function shuffle<T>(values: T[], seed: hash32): T[] {
 
       // Read 3-bytes of `source` as a 24-bit big-endian integer.
       // TODO: It should be noted at this point we need to do some math in regards to
-      // bytes. Will need to look at our best alternatives since class Buffer is a node
-      // specific package. For the time being stubbing the return value as an integer.
+      // TODO bytes. Will need to look at our best alternatives since class Buffer is a node
+      // TODO specific package. For the time being stubbing the return value as an integer.
       // TODO: typeof position === string .... ? Should be a number.
       let sampleFromSource = source.slice(position, (position + randBytes));
 
@@ -84,8 +84,7 @@ function shuffle<T>(values: T[], seed: hash32): T[] {
       }
     }
   }
-
-  return [];
+  return output;
 }
 
 /**
